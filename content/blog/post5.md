@@ -1,7 +1,7 @@
 Title: Local Volatility in PyQL
 Date: 2020-01-04 15:20
 Category: Finance
-Tags: Numerical Methods
+Tags: QuantLib, Volatility
 
 Summary: Building Local Volatility Surfaces in PyQL
 

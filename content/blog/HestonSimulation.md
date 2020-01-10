@@ -1,7 +1,7 @@
 Title: Simulating the Heston Process
 Date: 2018-04-29 10:20
 Category: Finance
-Tags: Numerical Methods
+Tags: Numerical Methods, QuantLib
 
 Summary: We investigate different discretization schemes for the Heston Process, looking at issues of numerical bias and
 ease of implementation

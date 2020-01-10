@@ -1,12 +1,11 @@
 Title: Variance Swaps in PyQL
 Date: 2020-01-04 10:20
 Category: Finance
-Tags: Numerical Methods
+Tags: QuantLib, PyQL, Pricing
 
-Summary: Devito allows users to build finite difference schemes in python and "compile-down" to optimized C++
+Summary: We review the Variance Swap pricer in QuantLib and their implemenation in PyQL
 
-
-## Introduction
+### Introduction
 
 Recently, I had the opportunity to extend the [PyQL](https://github.com/enthought/pyql) library to include variance swaps pricers.  I thought I'd take the chance to review the pricing of Variance Swaps in Quantlib (to refresh my own memory if nothing else).
 
