@@ -139,16 +139,17 @@ def gen_process(desc):
                             desc)
     return process
 
-processes = {"REFLECTION" : gen_process(REFLECTION),
-             "PARTIALTRUNCATION" : gen_process(PARTIALTRUNCATION),
-             "QUADRATICEXPONENTIAL" : gen_process(QUADRATICEXPONENTIAL),
-             "QUADRATICEXPONENTIALMARTINGALE" : gen_process(QUADRATICEXPONENTIALMARTINGALE),
+processes = {
+  "REFLECTION" : gen_process(REFLECTION),
+  "PARTIALTRUNCATION" : gen_process(PARTIALTRUNCATION),
+  "QUADRATICEXPONENTIAL" : gen_process(QUADRATICEXPONENTIAL),
+  "QUADRATICEXPONENTIALMARTINGALE" : gen_process(QUADRATICEXPONENTIALMARTINGALE),
 }
 ```
 
 ## Visualizing the Simulation
 
-Note: The *simulate* function is not part of Quantlib. It has been added to the pyQL interface (see folder quantlib/sim).
+Note: The *simulate* function is not part of Quantlib. It has been added to the PyQL interface (see folder [quantlib/sim](https://github.com/enthought/pyql/tree/master/quantlib/sim)).
 
 
 ```python

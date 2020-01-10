@@ -1,14 +1,11 @@
 Title: Black Variance Surface in PyQL
-Date: 2020-01-04 10:20
+Date: 2020-01-04 12:20
 Category: Finance
 Tags: Numerical Methods
 
-Summary: Devito allows users to build finite difference schemes in python and "compile-down" to optimized C++
+Summary: Building Black Variance Surfaces in PyQL
 
-
-## Introduction
-
-In my previous [post]() on Variance Swaps, I neglected to mention an
+In my previous [post](lostinthelyceum.com/Variance-Swaps-in-PyQL.html) on Variance Swaps, I neglected to mention an
 important implementation detail.  If you look the Variance Swap unittests you'll
 see that replicating pricer example requires a ``BlackVarianceSurface`` object.  
 I had to build bindings for these in PyQL so I thought I'd mention how they work.
@@ -26,8 +23,7 @@ Bicubic uses a cubic spline routine to smoothly interpolates between points.
 See for [wikipedia](https://en.wikipedia.org/wiki/Bicubic_interpolation) for a
 nice summary of bicubic vs. bilinear interpolation.
 
-As a sanity checked, I re-implemented results from an excellent blog [post]() by Goutham.  
-In that post, the author builds a BlackVarianceSurface object using Quantlib's swig bindings.
+As a sanity checked, I re-implemented results from an excellent blog [post](http://gouthamanbalaraman.com/blog/volatility-smile-heston-model-calibration-quantlib-python.html) by Gouthaman Balaraman.  In that post, the author builds a BlackVarianceSurface object using Quantlib's swig bindings.
 
 The plots for the same market data are given below:       
 
@@ -94,10 +90,13 @@ data = np.array([
 ```
 For Bilinear interpolation, the surface looks like
 
+![png]({attach}post4_files/BlackVol_Bilinear.png)
+
 For Bicubic interpolation, the surface looks like
 
+![png]({attach}post4_files/BlackVol_Bicubic.png)
 
-Take a look at the PyQL bindings on my [github] page to see how the
+Take a look at the PyQL bindings on my [github](https://github.com/kevingivens/pyql) page to see how the
 ``BlackVarianceSurface`` is implemented.  
 
 One thing that I clearly need to improve is the flexibility on the volatility data
