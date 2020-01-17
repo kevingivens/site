@@ -3,20 +3,29 @@ Date: 2020-01-04 15:20
 Category: Finance
 Tags: QuantLib, Volatility
 
-Summary: Building Local Volatility Surfaces in PyQL
+Summary: Local Volatility Surface in PyQL
 
-Following on my previous [post](lostinthelyceum.com/Black-Variance-Surface-in-PyQL.html), I wanted to review an important concept in
-volatility modeling. In particular, I wanted to discuss local volatility and how
-it's implemented in Quantlib.
+Following on my previous [post](lostinthelyceum.com/Black-Variance-Surface-in-PyQL.html),
+I wanted to review the important concept in local volatility.
 
 Many [books](https://books.google.com/books/about/The_Volatility_Surface.html?id=P7ASlvLRsKMC&source=kp_book_description)
-and [articles](https://en.wikipedia.org/wiki/Local_volatility) are dedicated
+and articles [1](https://en.wikipedia.org/wiki/Local_volatility), [2](http://web.math.ku.dk/~rolf/teaching/ctff03/Gatheral.1.pdf) are dedicated
 to discussing this topic.  I won't be able to discuss it in great detail in a
 blog post I just want to give a basic overview along with implementation details
 in PyQL.
 
 Essentially, the idea of Local Volatility is to first consider a diffusion of
 the following form
+
+$$
+\newcommand{\d}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\dd}[2]{\frac{\partial^2 #1}{\partial #2^2}}
+\newcommand{\f}[2]{\frac{#1}{#2}}
+
+\sigma^2(K,T,S_0) = \d{C}{T}
+\sigma^2(K,T,S_0) = \dd{C}{T}
+$$
+
 
 $$\partial S = \mu(t, S)\partial t + \sigma(t,S)\partial W$$  
 
@@ -27,29 +36,11 @@ be made to fit an arbitrary set of implied volatility quotes.  In his original
 paper Dupire, gave a prescription for the construction of such a surface
 $\sigma(t,S)$, known a local volatility.  The defining formula for this surface is
 
-$$$$
+$$
+v_{loc} = \frac{\frac{\partial w}{\partial T}}{1 - \frac{y}{w}\frac{\partial w}{\partial y} + \frac{1}{4}\left(-\frac{1}{4} - \frac{1}{w} + \frac{y^2}{w^2}\right)\left(\frac{\partial w}{\partial y}\right)^2 + \frac{1}{2}\left(\frac{\partial^2 w}{\partial y^2}\right)}
+$$
 
 Quantlib implements this equation in ``ql.termstructure.volatility.equityfx.localvolsurface``
-
-
-important implementation detail.  If you look the Variance Swap unittests you'll
-see that replicating pricer example requires a ``BlackVarianceSurface`` object.  
-I had to build bindings for these in pyql so I thought I'd mention how they work.
-
-``BlackVarianceSurface`` is a volatility termstructure that implements different
-types of interpolation routines between implied volatility quotes.  
-I included two types of interpolations from the Quantlib source code:
-
-* Bilinear
-* Bicubic
-
-Essentially, Bilinear linearly interpolates between neighboring quotes.
-Bicubic uses a cubic spline routine to smoothly interpolates between points.
-
-see plot for wikipedia
-
-As a sanity checked, I re-implemented results from an excellent blog post[] by Goutham.  
-In that post, he builds a BlackVarianceSurface object using Quantlib's swig bindings.       
 
 
 ```python
@@ -109,5 +100,6 @@ print("local vol: ", local_vol_surf.localVol(expiry, strike))
 In the plots below, we can see what the BlackVarianceSurface looks like for
 different interpolation methods
 
-Take a look at the pyql bindings on my github to see how the ``BlackVarianceSurface`` is implemented.  
+Take a look at the PyQL bindings on my [github](https://github.com/kevingivens/pyql)
+to see how the ``LocalVolSurface`` is implemented.  
 See you next time.
