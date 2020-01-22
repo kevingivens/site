@@ -3,7 +3,7 @@ Date: 2020-01-04 10:20
 Category: Finance
 Tags: QuantLib, PyQL, Pricing
 
-Summary: We review the Variance Swap pricer in QuantLib and their implemenation in PyQL
+Summary: We review the Variance Swap replicating pricer in QuantLib and its implementation in PyQL
 
 ### Introduction
 
@@ -19,9 +19,9 @@ $\tau$, and $K$ is the strike. This instrument can be used to provide pure expos
 
 Quantlib includes two different pricing engines, ``ReplicatingVarianceSwapEngine``
 and ``MCVarianceSwapEngine``.  As you might have guessed, ``ReplicatingVarianceSwapEngine``
-use a replicating portfolio to price a VarianceSwap and ``MCVarainceSwapEngine``
-uses a Monte Carlo simulation. For this post I'm going to focus on the
-replicating engine as the MCEngine is conventional, and therefore not terribly interesting.
+uses a replicating portfolio to price a VarianceSwap and ``MCVarainceSwapEngine``
+uses a Monte Carlo simulation. For this post, I'm going to focus on the
+replicating engine as the MCEngine is conventional and not terribly interesting.
 
 The replicating portfolio technique is described in thorough detail in [Derman](https://www.semanticscholar.org/paper/More-than-You-ever-Wanted-to-Know-about-Volatility-Demeterfi-Derman/3d9cfbe5ff32fd805f79c85b1e48fa9ac84e9128)
 In essence, the idea of this (or any) replicating pricer is to reproduce the
@@ -38,7 +38,7 @@ contract can itself be replicated by the particular combination of puts and call
 One could argue that a more direct approach would be to simply show that the variance swap can be approximately replicated using calls and puts.  I'm guessing the log contract might be used to guide intuition.  I honestly don't know.
 
 That being said, the Quantlib implementation is pretty straight forward.
-I directly adapted the variance swap unittests from Quantlib into pyQL
+I directly adapted the variance swap unittests from Quantlib into PyQL
 (``tests/test_variance_swap.py``)  You can find an example variance swap using
 the ``ReplicatingVarianceSwapEngine`` in that script.
 
@@ -50,7 +50,7 @@ The important sections are given below
 strike = 0.04
 notional = 50000
 start = today()
-end = start + int(0.246575*365+0.5) # This is weird but it was in Quantlib
+end = start + int(0.246575*365+0.5) # This is weird value but it was in the Quantlib unittest
 var_swap = VarianceSwap(SwapType.Long, 0.04, 50000, start, end)
 
 # Option Data used in the replicating engine
@@ -76,13 +76,13 @@ replicating_option_data = [
    {'type':OptionType.Call, 'strike':135, 'v':0.13},
 ]
 
-# The engine is constructed and attached to the swap
+# The engine is constructed
 engine = ReplicatingVarianceSwapEngine(process,
                                        call_strikes,
                                        put_strikes,
                                        5.0) # dK, shift below lowest put strike
 
-# The swap is priced
+# attach the engine to the swap
 var_swap.set_pricing_engine(engine)
 
 print("strike: ", var_swap.strike)
@@ -102,11 +102,11 @@ Briefly, the par strike for a variance swap is the expected realized variance, i
 
 $$ K_{var} = \frac{1}{T}\mathbf{E}\left[\int^T_0 \sigma^2(t, \dots)dt\right] $$
 
-The first step in the derivation is to re-write this expression.  For a Black Scholes-like spot process
+The first step in the derivation is to re-write this expression.  For an Ito process for the spot of the following generic form.
 
 $$\frac{dS_t}{S_t} = \mu(t, \dots) dt + \sigma(t, \dots) dW_t $$
 
-Applying Ito's lemma to $\ln(S_t)$ and subtracting the above equation gives
+Where $\mu$ and $\sigma$ can be time or level dependent. Applying Ito's lemma to $\ln(S_t)$ and subtracting the above equation gives
 
 $$\frac{dS_t}{S_t} - d(\ln(S_t)) = \frac{1}{2}\sigma^2dt$$
 
@@ -142,44 +142,3 @@ In the plot below I demonstrate the idea
 
 $$ \Pi = \sum_i w_iP(S,K_i) + \sum_j w_jC(S,K_j)$$
 The weights in the portfolio are then the instance slope of the payoff function  
-
-```python
-import numpy as np
-import matplotlib.plot at plt
-
-K = np.array(50,135, 5)
-K_D = np.array(50,135,1)
-F = f
-
-def f(S, T, S0 = 45):
-    return (2/T)*((S-S0)/S0 - np.log(S/S0))
-
-def weight(K1, K2):
-   return (f(S, T, S0) - f(S, T, S0))/(K2 - K1)
-
-
-call_weights = [0]
-for call, i in enumerate(calls[1:]):
-    call_weights.append(weight(call['K'], calls[i-1]['K']) - call_weights[:i-1].sum())
-
-```
-
-
-
-$$ \Vega_{var} = \frac{\partial C}{\partial \sigma^2} = \frac{S\sqrt{\tau}}{2\sqrt{2\pi}\sigma}\exp\left(\frac{-d_1^2}{2}\right) $$
-
-where $d1$ is the conventional Black Scholes CDF argument $d_1 = \frac{\ln(\frac{S}{K}) + (r - \frac{\sigma^2}{2})\tau}{\sigma\sqrt{\tau}}$
-
-As a fun exercise can now show that the variance swap does in fact of zero spot exposure
-Show Vega, Variance Sensies Plot
-
-```python
-
-def variance_vega(S,t,sigma,K,r):
-    d_1 = (np.log(S/K) + (r - (sigma**2/2))*t)/(sigma*np.sqrt(t))
-    return (S*np.sqrt(t))/(2*np.sqrt(2*np.pi)*sigma)*np.exp(-d_1**2/2)
-
-
-payoff NB not Call/Put ...
-
-```
