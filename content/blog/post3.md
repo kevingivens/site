@@ -23,19 +23,12 @@ uses a replicating portfolio to price a VarianceSwap and ``MCVarainceSwapEngine`
 uses a Monte Carlo simulation. For this post, I'm going to focus on the
 replicating engine as the MCEngine is conventional and not terribly interesting.
 
-The replicating portfolio technique is described in thorough detail in [Derman](https://www.semanticscholar.org/paper/More-than-You-ever-Wanted-to-Know-about-Volatility-Demeterfi-Derman/3d9cfbe5ff32fd805f79c85b1e48fa9ac84e9128)
-In essence, the idea of this (or any) replicating pricer is to reproduce the
-payoff of the variance swap using a portfolio of liquid vanilla instruments.  
-In [Derman](https://www.semanticscholar.org/paper/More-than-You-ever-Wanted-to-Know-about-Volatility-Demeterfi-Derman/3d9cfbe5ff32fd805f79c85b1e48fa9ac84e9128), the authors show that a replicating portfolio can be constructed from
-a weighted combination of European Calls and Puts.  We derive this
+The replicating portfolio technique is described in thorough detail in [Derman](https://www.semanticscholar.org/paper/More-than-You-ever-Wanted-to-Know-about-Volatility-Demeterfi-Derman/3d9cfbe5ff32fd805f79c85b1e48fa9ac84e9128) In essence, the idea of this (or any) replicating pricer is to reproduce the payoff of the variance swap using a portfolio of liquid vanilla instruments.  
+In [Derman](https://www.semanticscholar.org/paper/More-than-You-ever-Wanted-to-Know-about-Volatility-Demeterfi-Derman/3d9cfbe5ff32fd805f79c85b1e48fa9ac84e9128), the authors show that a replicating portfolio can be constructed from a weighted combination of European Calls and Puts.  We derive this
 portfolio in the next section.
 
 The derivation the the replicating portfolio is somewhat indirect.  The authors
-first introduce a fictitious instrument known as log contract that
-exactly replicates the variance swap payoff.  They then show that the log
-contract can itself be replicated by the particular combination of puts and calls.  
-
-One could argue that a more direct approach would be to simply show that the variance swap can be approximately replicated using calls and puts.  I'm guessing the log contract might be used to guide intuition.  I honestly don't know.
+introduce a fictitious instrument known as log contract that exactly replicates the variance swap payoff.  They then show that the log contract can itself be replicated by the particular combination of European puts and calls.  
 
 That being said, the Quantlib implementation is pretty straight forward.
 I directly adapted the variance swap unittests from Quantlib into PyQL
@@ -98,11 +91,11 @@ variance: 0.0419
 ```
 ## Deriving the Replicating Portfolio
 
-Briefly, the par strike for a variance swap is the expected realized variance, i.e.
+Briefly, from the definition of the variance strike given above, we see that the par strike of a variance swap is the expected realized variance, i.e.
 
 $$ K_{var} = \frac{1}{T}\mathbf{E}\left[\int^T_0 \sigma^2(t, \dots)dt\right] $$
 
-The first step in the derivation is to re-write this expression.  For an Ito process for the spot of the following generic form.
+The first step in the derivation is to re-write this expression.  We consider a generic Ito process of the following form:
 
 $$\frac{dS_t}{S_t} = \mu(t, \dots) dt + \sigma(t, \dots) dW_t $$
 
@@ -110,35 +103,57 @@ Where $\mu$ and $\sigma$ can be time or level dependent. Applying Ito's lemma to
 
 $$\frac{dS_t}{S_t} - d(\ln(S_t)) = \frac{1}{2}\sigma^2dt$$
 
-We insert this expression into the $K_{var}$ to get
+We insert this expression into the $K_{var}$ definition to get
 
 <!--$$ K_{var} = \frac{2}{T}\left[rT - \left(\frac{S_T}{S_*}\exp^{rT} -1) -\log\frac{S_*}{S_0} \right) \right]$$-->
 
 $$
 \begin{align}
 K_{var} =& \frac{2}{T}\mathbf{E}\left[\int^T_0 \frac{\partial S_t}{S_t} - \ln\left(\frac{S_T}{S_0}\right)\right] \\
-        =& \frac{2}{T}\mathbf{E}\left[\int^T_0 \frac{\partial S_t}{S_t} - \frac{S_T- S_*}{S_*}- \ln\left(\frac{S_*}{S_0}\right) + \frac{S_T- S_*}{S_*} -\ln\left(\frac{S_T}{S_*}\right)\right]
 \end{align}
 $$
 
-Where we introduce $S_*$ as the Put strike range lower bound, i.e. $S_*  = K_{Put_1} - dK$. From the example given above $S_*  = 50 - 5 = 45$.  
+ Next, we partition the strike domain by introducing a cutoff strike value, $S_* \in (0, \infty)$.  In what follows this cutoff will be set to lower bound of put strikes, but for now we leave it arbitrary.
 
-Distributing the expectation value gives
+The allows us the write $K_{var}$ as
 
-$$K_{var} = \frac{2}{T}\left[rT - \left(\frac{S_0}{S_*}e^{rT} - 1\right) - \ln\left(\frac{S_*}{S_0}\right)\right] + e^{rT}\frac{2}{T}\mathbf{E}\left[ \frac{S_T- S_*}{S_*} -\ln\left(\frac{S_T}{S_*}\right)\right]$$
+$$
+\begin{align}
+K_{var} =& \frac{2}{T}\mathbf{E}\left[\int^T_0 \frac{\partial S_t}{S_t} - \frac{S_T- S_*}{S_*}- \ln\left(\frac{S_*}{S_0}\right) + \frac{S_T- S_*}{S_*} -\ln\left(\frac{S_T}{S_*}\right)\right]
+\end{align}
+$$
 
-Where we have used the fact that, in the risk neutral measure
-$$\mathbf{E}\left[\int^T_0 \frac{\partial S_t}{S_t}dt\right] = rT$$
+We can then use the fact that in the risk neutral measure
 
-This expression implies that the par variance strike can be replicated with an option with the following payoff
+$$
+\mathbf{E}\left[\int^T_0 \frac{\partial S_t}{S_t}dt\right] = rT
+$$
 
-$$ f(S_T) = \frac{2}{T}\left(\frac{S_T-S_*}{S_*} - \ln\frac{S_T}{S_*}\right) $$
+(i.e. martingales are driftless) Distributing the expectation value gives
+
+$$
+K_{var} = \frac{2}{T}\left[rT - \left(\frac{S_0}{S_*}e^{rT} - 1\right) - \ln\left(\frac{S_*}{S_0}\right)\right] + e^{rT}\frac{2}{T}\mathbf{E}\left[ \frac{S_T- S_*}{S_*} -\ln\left(\frac{S_T}{S_*}\right)\right]
+$$
+
+
+This expression implies that the variance swap can be replicated with an option with the following payoff
+
+$$
+f(S_T) = \frac{2}{T}\left(\frac{S_T-S_*}{S_*} - \ln\frac{S_T}{S_*}\right) \label{eq1}
+$$
+
+This option is the so-called *log-contract*, which obviously only exists in the minds of quants.
+
+The final trick to recognize that the *log-contract* can itself be replicated as linear combination of calls and puts (which thankfully do exist!)  
+
+You can show that
+$$
+\mathbf{E}\left[ \frac{S_T- S_*}{S_*} -\ln\left(\frac{S_T}{S_*}\right)\right] = \int^{S_*}_0 dK\frac{\max[K- S(t),0]}{K^2} + \int_{S_*}^{\infty} dK\frac{\max[S(t)- K, 0]}{K^2}
+$$
+
+
+We can now set $S_*$ to the put strike lower bound, $S_*  = K_{Put_1} - dK$.  In the numerical example given above $S_*  = 50 - 5 = 45$
 
 It's this option that is approximated with a combination of puts and calls.  
 Namely, The continuous payoff function given above is is approximated by a series of
 put and call payoff functions that represent the instantaneous slope of the payoff function.
-
-In the plot below I demonstrate the idea
-
-$$ \Pi = \sum_i w_iP(S,K_i) + \sum_j w_jC(S,K_j)$$
-The weights in the portfolio are then the instance slope of the payoff function  
