@@ -269,50 +269,12 @@ results_df = results_df[cols]
 ```python
 results_df
 ```
-
-<div>
-<table border="1">
-  <thead>
-    <tr style="text-align: right;">
-      <th>time steps per year</th>
-      <th>REFLECTION</th>
-      <th>PARTIALTRUNCATION</th>
-      <th>QUADRATICEXPONENTIAL</th>
-      <th>QUADRATICEXPONENTIALMARTINGALE</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>1</td>
-      <td>(1.64404, 0.05392)</td>
-      <td>(1.64447, 0.06608)</td>
-      <td>(1.98966, 0.04768)</td>
-      <td>(1.80227, 0.03563)</td>
-    </tr>
-    <tr>
-      <td>4</td>
-      <td>(1.74109, 0.03607)</td>
-      <td>(1.74109, 0.03607)</td>
-      <td>(1.77399, 0.03692)</td>
-      <td>(1.75864, 0.0351)</td>
-    </tr>
-    <tr>
-      <td>8</td>
-      <td>(1.71144, 0.02744)</td>
-      <td>(1.71144, 0.02744)</td>
-      <td>(1.70905, 0.02727)</td>
-      <td>(1.70581, 0.02687)</td>
-    </tr>
-    <tr>
-      <td>16</td>
-      <td>(1.71527, 0.02811)</td>
-      <td>(1.71527, 0.02811)</td>
-      <td>(1.73049, 0.02829)</td>
-      <td>(1.72956, 0.02818)</td>
-    </tr>
-  </tbody>
-</table>
-</div>
+| time steps per year | REFLECTION   | PARTIAL TRUNCATION  |QUADRATIC EXPONENTIAL |QUADRATIC EXPONENTIAL MARTINGALE|
+| ------------------- | -------------| --------------------| ---------------------| -------------------------------|
+| 1                   | (1.64404, 0.05392) | (1.74109, 0.03607) |(1.71144, 0.02744)| (1.71527, 0.02811)|
+| 4                   | (1.64447, 0.06608) | (1.74109, 0.03607) |(1.71144, 0.02744)| (1.71527, 0.02811)|
+| 8                   | (1.98966, 0.04768) | (1.77399, 0.03692) |(1.70905, 0.02727)| (1.73049, 0.02829)|
+| 16                  | (1.80227, 0.03563) | (1.75864, 0.0351)  |(1.70581, 0.02687)| (1.72956, 0.02818)|
 
 
 ## Conclusion

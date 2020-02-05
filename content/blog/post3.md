@@ -105,8 +105,6 @@ $$\frac{dS_t}{S_t} - d(\ln(S_t)) = \frac{1}{2}\sigma^2dt$$
 
 We insert this expression into the $K_{var}$ definition to get
 
-<!--$$ K_{var} = \frac{2}{T}\left[rT - \left(\frac{S_T}{S_*}\exp^{rT} -1) -\log\frac{S_*}{S_0} \right) \right]$$-->
-
 $$
 \begin{align}
 K_{var} =& \frac{2}{T}\mathbf{E}\left[\int^T_0 \frac{\partial S_t}{S_t} - \ln\left(\frac{S_T}{S_0}\right)\right] \\
@@ -150,7 +148,6 @@ You can show that
 $$
 \mathbf{E}\left[ \frac{S_T- S_*}{S_*} -\ln\left(\frac{S_T}{S_*}\right)\right] = \int^{S_*}_0 dK\frac{\max[K- S(t),0]}{K^2} + \int_{S_*}^{\infty} dK\frac{\max[S(t)- K, 0]}{K^2}
 $$
-
 
 We can now set $S_*$ to the put strike lower bound, $S_*  = K_{Put_1} - dK$.  In the numerical example given above $S_*  = 50 - 5 = 45$
 

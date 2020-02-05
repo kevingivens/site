@@ -18,7 +18,7 @@ two types of interpolations from the Quantlib source code:
 * Bilinear
 * Bicubic
 
-To over simplfy, Bilinear linearly interpolates between neighboring quotes.
+To over simplify, Bilinear linearly interpolates between neighboring quotes.
 Bicubic uses a cubic spline routine (third order polynomial) to smoothly
 interpolate between points.
 
