@@ -6,15 +6,19 @@ Tags: QuantLib, Volatility
 Summary: Local Volatility Surface in PyQL
 
 Following on my previous [post](lostinthelyceum.com/Black-Variance-Surface-in-PyQL.html),
-I wanted to review the important concept in local volatility.
+I wanted to review the important concept of Local Volatility.
 
 Many [books](https://books.google.com/books/about/The_Volatility_Surface.html?id=P7ASlvLRsKMC&source=kp_book_description)
 and articles [1](https://en.wikipedia.org/wiki/Local_volatility), [2](http://web.math.ku.dk/~rolf/teaching/ctff03/Gatheral.1.pdf) are dedicated
-to discussing this topic.  I won't be able to discuss it in great detail in a
+to discussing this topic.  I won't go into great detail in a
 blog post I just want to give a basic overview along with implementation details
 in PyQL.
 
-Essentially, the idea of Local Volatility is to first consider a diffusion of
+Essentially, the idea of Local Volatility is the identify the *unique*, *level-dependent* diffusion that *exactly* reproduces market implied volatilities.  The contribution of [Dupire](https://web.archive.org/web/20120907114056/http://www.risk.net/data/risk/pdf/technical/2007/risk20_0707_technical_volatility.pdf) was to show that
+this unique diffusion exists along with a practical prescription for deriving it
+from market quotes.
+
+ mais to first consider a diffusion of
 the following form
 
 $$
@@ -31,7 +35,7 @@ $$\partial S = \mu(t, S)\partial t + \sigma(t,S)\partial W$$
 
 In particular, the volatility, $\sigma$, is a function of time, $t$, and level, $S$,
 but is not itself a random process as it would be in a stochastic volatility
-model. The question, first addressed by [Dupire](https://web.archive.org/web/20120907114056/http://www.risk.net/data/risk/pdf/technical/2007/risk20_0707_technical_volatility.pdf), was whether such a model could
+model. The question, first addressed by  was whether such a model could
 be made to fit an arbitrary set of implied volatility quotes.  In his original
 paper Dupire, gave a prescription for the construction of such a surface
 $\sigma(t,S)$, known a local volatility.  The defining formula for this surface is
@@ -39,6 +43,14 @@ $\sigma(t,S)$, known a local volatility.  The defining formula for this surface 
 $$
 v_{loc} = \frac{\frac{\partial w}{\partial T}}{1 - \frac{y}{w}\frac{\partial w}{\partial y} + \frac{1}{4}\left(-\frac{1}{4} - \frac{1}{w} + \frac{y^2}{w^2}\right)\left(\frac{\partial w}{\partial y}\right)^2 + \frac{1}{2}\left(\frac{\partial^2 w}{\partial y^2}\right)}
 $$
+
+$$w(S_0,K,T) = \sigma^2_{BS}(S_0,K,T)T$$
+
+$$F_T= S_0\exp\left(\int_0^T\mu(t)dt\right)$$
+
+$$y = \ln\left(\frac{K}{F_T}\right)$$
+
+$$v_L = \sigma^2(S_0, K,T)$$
 
 Quantlib implements this equation in ``ql.termstructure.volatility.equityfx.localvolsurface``
 

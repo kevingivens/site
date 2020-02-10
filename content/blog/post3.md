@@ -101,7 +101,7 @@ $$\frac{dS_t}{S_t} = \mu(t, \dots) dt + \sigma(t, \dots) dW_t $$
 
 Where $\mu$ and $\sigma$ can be time or level dependent. Applying Ito's lemma to $\ln(S_t)$ and subtracting the above equation gives
 
-$$\frac{dS_t}{S_t} - d(\ln(S_t)) = \frac{1}{2}\sigma^2dt$$
+$$\frac{dS_t}{S_t} - d\left(\ln(S_t)\right) = \frac{1}{2}\sigma^2dt$$
 
 We insert this expression into the $K_{var}$ definition to get
 
@@ -111,7 +111,7 @@ K_{var} =& \frac{2}{T}\mathbf{E}\left[\int^T_0 \frac{\partial S_t}{S_t} - \ln\le
 \end{align}
 $$
 
- Next, we partition the strike domain by introducing a cutoff strike value, $S_* \in (0, \infty)$.  In what follows this cutoff will be set to lower bound of put strikes, but for now we leave it arbitrary.
+Next, we partition the strike domain by introducing a cutoff strike value, $S_* \in (0, \infty)$.  In what follows this cutoff will be set to lower bound of put strikes, but for now we leave it arbitrary.
 
 The allows us the write $K_{var}$ as
 
@@ -134,7 +134,7 @@ K_{var} = \frac{2}{T}\left[rT - \left(\frac{S_0}{S_*}e^{rT} - 1\right) - \ln\lef
 $$
 
 
-This expression implies that the variance swap can be replicated with an option with the following payoff
+This expression implies that the variance swap can be replicated by an option with the following payoff
 
 $$
 f(S_T) = \frac{2}{T}\left(\frac{S_T-S_*}{S_*} - \ln\frac{S_T}{S_*}\right) \label{eq1}
@@ -142,15 +142,11 @@ $$
 
 This option is the so-called *log-contract*, which obviously only exists in the minds of quants.
 
-The final trick to recognize that the *log-contract* can itself be replicated as linear combination of calls and puts (which thankfully do exist!)  
+The final trick to recognize that the log-contract can itself be replicated as linear combination of European calls and puts (which thankfully do exist!).  We first consider the strike, $K$, as a *continuous* variable.  We then can build a portfolio that matches the log contract's payoff by weighting the options with the inverse of their strikes.
 
-You can show that
+Namely, we can show that
 $$
-\mathbf{E}\left[ \frac{S_T- S_*}{S_*} -\ln\left(\frac{S_T}{S_*}\right)\right] = \int^{S_*}_0 dK\frac{\max[K- S(t),0]}{K^2} + \int_{S_*}^{\infty} dK\frac{\max[S(t)- K, 0]}{K^2}
+ \frac{S_T- S_*}{S_*} -\ln\left(\frac{S_T}{S_*}\right) = \int^{S_*}_0 dK\frac{\max[K- S(T),0]}{K^2} + \int_{S_*}^{\infty} dK\frac{\max[S(T)- K, 0]}{K^2}
 $$
 
 We can now set $S_*$ to the put strike lower bound, $S_*  = K_{Put_1} - dK$.  In the numerical example given above $S_*  = 50 - 5 = 45$
-
-It's this option that is approximated with a combination of puts and calls.  
-Namely, The continuous payoff function given above is is approximated by a series of
-put and call payoff functions that represent the instantaneous slope of the payoff function.
