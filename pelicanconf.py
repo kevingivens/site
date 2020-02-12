@@ -70,7 +70,8 @@ DEFAULT_PAGINATION = 10
 # Added for pelican bootstrap theme
 
 PLUGIN_PATHS = ['../pelican-plugins', ]
-PLUGINS = ['i18n_subsites', 'tipue_search', 'liquid_tags.notebook','render_math']
+#PLUGINS = ['i18n_subsites', 'tipue_search', 'liquid_tags.notebook','render_math']
+PLUGINS = ['i18n_subsites', 'tipue_search','render_math']
 #PLUGINS = ['tipue_search','render_math']
 JINJA_ENVIRONMENT = {
     'extensions': ['jinja2.ext.i18n'],

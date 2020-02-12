@@ -9,21 +9,20 @@ Following on my previous [post](lostinthelyceum.com/Black-Variance-Surface-in-Py
 I wanted to review the important concept of Local Volatility.
 Many [books](https://books.google.com/books/about/The_Volatility_Surface.html?id=P7ASlvLRsKMC&source=kp_book_description)
 and articles [1](https://en.wikipedia.org/wiki/Local_volatility), [2](http://web.math.ku.dk/~rolf/teaching/ctff03/Gatheral.1.pdf) are dedicated
-to discussing this topic.  I won't go into great detail in a
-blog post I just want to give a basic overview along with implementation details
-in PyQL.
+to discussing this topic.  I won't go into great detail here, I just want to give a basic overview along with implementation details in PyQL.
 
 Essentially, the idea of Local Volatility is to identify *level-dependent* diffusion that *exactly* reproduces market implied volatilities.  The contribution of [Dupire](https://web.archive.org/web/20120907114056/http://www.risk.net/data/risk/pdf/technical/2007/risk20_0707_technical_volatility.pdf) was to prove that
 this diffusion is *unique*  while also providing a convenient technique for deriving it from market quotes.
 
-The full derivation of the local volatility function is given in section 2.2 and the appendix of [2](http://web.math.ku.dk/~rolf/teaching/ctff03/Gatheral.1.pdf)  Here, I'll just give a sketch of the approach.
+The full derivation of the local volatility function is given in section 2.2 and the appendix of [2](http://web.math.ku.dk/~rolf/teaching/ctff03/Gatheral.1.pdf).  Here, I'll just give a sketch of the approach.
 
-To begin, consider a generic, *level-dependent*, 1-D stochastic process
+To begin, consider a generic, *level-dependent*, 1-D Brownian motion
 
 $$
 \newcommand{\f}[2]{\frac{#1}{#2}}
 \f{\partial S}{S} = \mu(t, S)\partial t + \sigma(t,S)\partial W
 $$
+
 
 Note the volatility for this process is **not** itself stochastic.  We can use
 this process to model the diffusion on a equity spot price in the presence of
@@ -43,18 +42,23 @@ $F_T=S_0\exp(\int_0^T\mu(t)dt)$
 
 This gives
 $$
-
-$$
-
 \newcommand{\d}[2]{\frac{\partial #1}{\partial #2}}
 \newcommand{\dd}[2]{\frac{\partial^2 #1}{\partial #2^2}}
 \newcommand{\f}[2]{\frac{#1}{#2}}
 
-\sigma^2(K,T,S_0) = \d{C}{T}
-\sigma^2(K,T,S_0) = \dd{C}{T}
+\d{C}{t} = \f{\sigma^2K^2}{2}\dd{C}{K}
+
 $$
 
+or solving with volatility gives Dupire's equation
 
+$$
+\newcommand{\d}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\dd}[2]{\frac{\partial^2 #1}{\partial #2^2}}
+\newcommand{\f}[2]{\frac{#1}{#2}}
+
+\sigma^2(K,T) =  \f{\d{C}{T}}{\f{1}{2}K^2\dd{C}{K}}
+$$
 
 
 In particular, the volatility, $\sigma$, is a function of time, $t$, and level, $S$,
@@ -68,7 +72,9 @@ $$
 v_{loc} = \frac{\frac{\partial w}{\partial T}}{1 - \frac{y}{w}\frac{\partial w}{\partial y} + \frac{1}{4}\left(-\frac{1}{4} - \frac{1}{w} + \frac{y^2}{w^2}\right)\left(\frac{\partial w}{\partial y}\right)^2 + \frac{1}{2}\left(\frac{\partial^2 w}{\partial y^2}\right)}
 $$
 
-$$w(S_0,K,T) = \sigma^2_{BS}(S_0,K,T)T$$
+$$
+w(S_0,K,T) = \sigma^2_{BS}(S_0,K,T)T
+$$
 
 $$F_T= S_0\exp\left(\int_0^T\mu(t)dt\right)$$
 
@@ -135,6 +141,8 @@ print("local vol: ", local_vol_surf.localVol(expiry, strike))
 
 In the plots below, we can see what the BlackVarianceSurface looks like for
 different interpolation methods
+
+![png]({attach}post5_files/LocalVol.png)
 
 Take a look at the PyQL bindings on my [github](https://github.com/kevingivens/pyql)
 to see how the ``LocalVolSurface`` is implemented.  
