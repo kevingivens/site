@@ -294,8 +294,6 @@ Comparing that with the Numpy implementation gives similar results
 ```python
 C
 ```
-
-
     array([  0.00000000e+00,   6.77083365e-15,   2.47797465e-11,
              1.38986768e-08,   2.31379196e-06,   1.50919507e-04,
              4.48551091e-03,   6.67669285e-02,   5.33585468e-01,
@@ -306,15 +304,17 @@ C
 
 
 
-As one can see from the results, the closest agreement between all three solutions is away from the boundaries and the cusp S = K.  This makes sense as the pricing function isn't smooth at those points.  I will explore the numerical errors in a later post.
+As one can see from the results, the closest agreement between all three solutions is away from the boundaries and the cusp S = K.  
+This makes sense as the pricing function isn't smooth at those points.  I will explore the numerical errors in a later post.
 
 For fun, let's you can take a look at the C++ code that was generated and JIT compiled during evaluation
 
 
-```c++
+```python
 print(op.ccode)
 ```
 
+```c
     #define _POSIX_C_SOURCE 200809L
     #include "stdlib.h"
     #include "math.h"
@@ -352,7 +352,7 @@ print(op.ccode)
       timings->section_1 += (double)(end_section_1.tv_sec-start_section_1.tv_sec)+(double)(end_section_1.tv_usec-start_section_1.tv_usec)/1000000;
       return 0;
     }
-
+```
 
 ## Conclusion
 
