@@ -149,4 +149,21 @@ $$
  \frac{S_T- S_*}{S_*} -\ln\left(\frac{S_T}{S_*}\right) = \int^{S_*}_0 dK\frac{\max[K- S(T),0]}{K^2} + \int_{S_*}^{\infty} dK\frac{\max[S(T)- K, 0]}{K^2}
 $$
 
-We can now set $S_*$ to the put strike lower bound, $S_*  = K_{Put_1} - dK$.  In the numerical example given above $S_*  = 50 - 5 = 45$
+
+So we can approximate the price of the log-contract by expanding the expectation value
+as a sum of European calls and puts
+
+$$
+\begin{align}
+\mathbf{E}\left[ \frac{S_T- S_*}{S_*} -\ln\left(\frac{S_T}{S_*}\right)\right] &=
+\mathbf{E}\left[ \int^{S_*}_0 dK\frac{\max[K- S(T),0]}{K^2} + \int_{S_*}^{\infty} dK\frac{\max[S(T)- K, 0]}{K^2} \right] \\
+ & =\int^{S_*}_0 \frac{dK}{K^2} \mathbf{E}\left[\max[K- S(T),0]\right] + \int_{S_*}^{\infty} \frac{dK}{K^2}\mathbf{E}\left[\max[S(T)- K, 0]\right] \\
+  & =\int^{S_*}_0 \frac{dK}{K^2} P(K,T) + \int_{S_*}^{\infty} \frac{dK}{K^2}C(K,T) \\
+\end{align}
+$$
+$S_*$ is then set to the put strike lower bound, $S_*  = K_{Put_1} - dK$.  In the numerical example given above $S_*  = 50 - 5 = 45$.
+
+Take a look at the PyQL bindings on my [github](https://github.com/kevingivens/pyql) page to see how the
+``ReplicatingVarianceSwapEngine`` is implemented.
+
+See you next time.

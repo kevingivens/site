@@ -11,7 +11,7 @@ Many [books](https://books.google.com/books/about/The_Volatility_Surface.html?id
 and articles [1](https://en.wikipedia.org/wiki/Local_volatility), [2](http://web.math.ku.dk/~rolf/teaching/ctff03/Gatheral.1.pdf) are dedicated
 to discussing this topic.  I won't go into great detail here, I just want to give a basic overview along with implementation details in PyQL.
 
-Essentially, the idea of Local Volatility is to identify *level-dependent* diffusion that *exactly* reproduces market implied volatilities.  The contribution of [Dupire](https://web.archive.org/web/20120907114056/http://www.risk.net/data/risk/pdf/technical/2007/risk20_0707_technical_volatility.pdf) was to prove that
+Essentially, the idea of Local Volatility is to identify a *level-dependent* diffusion that *exactly* reproduces market implied volatilities.  The contribution of [Dupire](https://web.archive.org/web/20120907114056/http://www.risk.net/data/risk/pdf/technical/2007/risk20_0707_technical_volatility.pdf) was to prove that
 this diffusion is *unique*  while also providing a convenient technique for deriving it from market quotes.
 
 The full derivation of the local volatility function is given in section 2.2 and the appendix of [2](http://web.math.ku.dk/~rolf/teaching/ctff03/Gatheral.1.pdf).  Here, I'll just give a sketch of the approach.
@@ -19,71 +19,68 @@ The full derivation of the local volatility function is given in section 2.2 and
 To begin, consider a generic, *level-dependent*, 1-D Brownian motion
 
 $$
-\newcommand{\f}[2]{\frac{#1}{#2}}
-\f{\partial S}{S} = \mu(t, S)\partial t + \sigma(t,S)\partial W
+\frac{\partial S}{S} = \mu(t, S)\partial t + \sigma(t,S)\partial W
 $$
 
 
-Note the volatility for this process is **not** itself stochastic.  We can use
+Note that, the volatility for this process is **not** itself stochastic.  We can use
 this process to model the diffusion on a equity spot price in the presence of
-a short rate $r(t)$ and a dividend yield $D(t)$.  The equivalent of the Black Scholes
-equation is
+a short rate $r(t)$ and a dividend yield $D(t)$.  A European call option for this process
+then satisfies a modified version of the Black-Scholes equation:
 
 $$
-\newcommand{\d}[2]{\frac{\partial #1}{\partial #2}}
-\newcommand{\dd}[2]{\frac{\partial^2 #1}{\partial #2^2}}
-\newcommand{\f}[2]{\frac{#1}{#2}}
-
-\d{C}{t} = \f{\sigma^2K^2}{2}\dd{C}{K} + (r(t) - D(t))\left(C- K\d{C}{K}\right)
+\frac{\partial{C}}{\partial{t}} = \frac{\sigma^2K^2}{2}\frac{\partial^2C}{\partial K^2} + (r(t) - D(t))\left(C- K\frac{\partial{C}}{\partial{K}}\right)
 $$
 
-We can simplify this equation by writing C as a function of the forward price
-$F_T=S_0\exp(\int_0^T\mu(t)dt)$
+We can simplify this equation by writing $C(S_0, K,T)$ as a function of the forward price
+$F_T=S_0\exp(\int_0^T\mu(t)dt) = S_0\exp(\int_0^T(r(t) - D(t))dt)$, (i.e. use the forward measure)
 
-This gives
-$$
-\newcommand{\d}[2]{\frac{\partial #1}{\partial #2}}
-\newcommand{\dd}[2]{\frac{\partial^2 #1}{\partial #2^2}}
-\newcommand{\f}[2]{\frac{#1}{#2}}
-
-\d{C}{t} = \f{\sigma^2K^2}{2}\dd{C}{K}
+In these units, Black-Scholes equation simplifies to
 
 $$
-
-or solving with volatility gives Dupire's equation
-
-$$
-\newcommand{\d}[2]{\frac{\partial #1}{\partial #2}}
-\newcommand{\dd}[2]{\frac{\partial^2 #1}{\partial #2^2}}
-\newcommand{\f}[2]{\frac{#1}{#2}}
-
-\sigma^2(K,T) =  \f{\d{C}{T}}{\f{1}{2}K^2\dd{C}{K}}
+\frac{\partial C}{\partial t} = \frac{\sigma^2K^2}{2}\frac{\partial^2 C}{\partial K^2}
 $$
 
-
-In particular, the volatility, $\sigma$, is a function of time, $t$, and level, $S$,
-but is not itself a random process as it would be in a stochastic volatility
-model. The question, first addressed by  was whether such a model could
-be made to fit an arbitrary set of implied volatility quotes.  In his original
-paper Dupire, gave a prescription for the construction of such a surface
-$\sigma(t,S)$, known a local volatility.  The defining formula for this surface is
+or solving for the volatility gives Dupire's equation
 
 $$
-v_{loc} = \frac{\frac{\partial w}{\partial T}}{1 - \frac{y}{w}\frac{\partial w}{\partial y} + \frac{1}{4}\left(-\frac{1}{4} - \frac{1}{w} + \frac{y^2}{w^2}\right)\left(\frac{\partial w}{\partial y}\right)^2 + \frac{1}{2}\left(\frac{\partial^2 w}{\partial y^2}\right)}
+\sigma^2(K,T) =  \frac{\frac{\partial C}{\partial T}}{\frac{1}{2}K^2\frac{\partial^2 C}{\partial K^2}}
 $$
+
+Market quotes are usually given in terms of Black-Scholes implied volatilities.
+We can express the local volatility in terms of these quantities by equating the
+price equations for the two models
+
+$$
+C_{local}(S_0, K,T) = C_{BS}(S_0, K, \sigma_{BS}, T)
+$$
+
+The strategy is then to solve for the local volatility in terms of the Black-Scholes
+impliedvolatility since we have a closed form expression for the $C_{BS}$.  The full derivation is given in section 2.2 of [2](http://web.math.ku.dk/~rolf/teaching/ctff03/Gatheral.1.pdf)
+.  Here we just reproduce the results.
+
+Namely, using more convenient units, the Black-Scholes total variance
 
 $$
 w(S_0,K,T) = \sigma^2_{BS}(S_0,K,T)T
 $$
 
-$$F_T= S_0\exp\left(\int_0^T\mu(t)dt\right)$$
-
+and log-moneyness
 $$y = \ln\left(\frac{K}{F_T}\right)$$
 
-$$v_L = \sigma^2(S_0, K,T)$$
+We can show that the local variance
+$$v_{local} = \sigma^2(S_0, K,T)$$
+
+satisfies the following expression:
+$$
+v_{local} = \frac{\frac{\partial w}{\partial T}}{1 - \frac{y}{w}\frac{\partial w}{\partial y} + \frac{1}{4}\left(-\frac{1}{4} - \frac{1}{w} + \frac{y^2}{w^2}\right)\left(\frac{\partial w}{\partial y}\right)^2 + \frac{1}{2}\left(\frac{\partial^2 w}{\partial y^2}\right)}
+$$
 
 Quantlib implements this equation in ``ql.termstructure.volatility.equityfx.localvolsurface``
 
+
+In the code excerpt below we, show the LocalVolSurface is used in PyQL.  It follows
+a similiar interface and BlackVarianceSurface given in the previous [post](lostinthelyceum.com/Black-Variance-Surface-in-PyQL.html).  
 
 ```python
 calc_date = Date(6, 11, 2015)
@@ -139,11 +136,9 @@ print("local vol: ", local_vol_surf.localVol(expiry, strike))
 
 ```
 
-In the plots below, we can see what the BlackVarianceSurface looks like for
-different interpolation methods
+In the plots below, we can see what the LocalVolSurface looks like:
 
 ![png]({attach}post5_files/LocalVol.png)
 
 Take a look at the PyQL bindings on my [github](https://github.com/kevingivens/pyql)
-to see how the ``LocalVolSurface`` is implemented.  
-See you next time.
+to see an example of the  ``LocalVolSurface``. See you next time.
