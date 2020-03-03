@@ -117,3 +117,12 @@ header file, e.g
 This means that the data members are aligned to match the bytes
 
 (https://stackoverflow.com/questions/3318410/pragma-pack-effect)
+
+
+```
+network_to_host(msg);
+```
+
+```
+handler(msg);
+```
