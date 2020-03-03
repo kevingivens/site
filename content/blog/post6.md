@@ -16,28 +16,30 @@ Essentially, the ITCH protocol is a binary message format for placing orders on 
 The latest version of protocol is 5.0 and its spec can be found [here](https://www.nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/NQTVITCHspecification.pdf) ITCH defines a series of messages along
 with the type and size of the message's components.  
 
-For example, an ADD order looks like this:
+For example, an Add order looks like this:
+
 
 ### Add Order Message
 
 |Name                   | Offset | Length | Value | Notes|
-|---------------------- |:--:|:------:|:-----:|------|
-|Message Type           | 0 |1 |“A” |Add Order – No MPID Attribution Message.|
-|Stock Locate           | 1 |2 |Integer| Locate code identifying the security|
-|Tracking Number        | 3 | 2 |Integer | Nasdaq internal tracking number|
-|Timestamp              | 5 | 6 |Integer | Nanoseconds since midnight.|
-|Order Reference Number |11 | 8 |Integer | The unique reference number assigned to the new order at the time of receipt.|
-|Buy/Sell Indicator     |19 |1  |Alpha| The type of order being added. “B” = Buy Order. “S” = SellOrder.|
+|---------------------- |-----|----------|--------|------|
+|Message Type           |   0 |1 |“A” |Add Order – No MPID Attribution Message.|
+|Stock Locate           |   1 |2 |Integer| Locate code identifying the security|
+|Tracking Number        |   3 | 2 |Integer | Nasdaq internal tracking number|
+|Timestamp              |   5   | 6 |Integer | Nanoseconds since midnight.|
+|Order Reference Number |  11   | 8 |Integer | Unique reference number assigned to new order at the time of receipt.|
+|Buy/Sell Indicator     |19 |1  |Alpha| The type of order being added. “B” = Buy “S” = Sell|
 |Shares                 |20 |4  |Integer | The total number of shares associated with the order being added to the book.|
 |Stock                  |24 |8  |Alpha |Stock symbol, right padded with spaces|
-|Price                  |32 |4  |Price (4)| The display price of the new order. Refer to Data Types for field processing notes.|
+|Price                  |32 |4  |Price | The display price of the new order|
+
 
 
 The job of the parser is to read these messages from a file (or a file descriptor)
 and to translate them into objects (classes in C++) that a program can understand.
 For instance, a C++ struct that represents an add order could look like this
 
-```
+```cpp
 struct AddMessage {
   MessageType message_type;
   uint16_t stock_locate;
@@ -64,7 +66,7 @@ each type. In the ITCH parser, this switch looks like the following:
 
 
 
-```
+```cpp
 switch (MessageType(msg[0])) {
 case MessageType::SystemEvent:
     return parseAs<SystemEvent>(msg, len, std::forward<Handler>(handler));
@@ -99,7 +101,7 @@ use reinterpret_cast to cast the bytes into the appropriate struct. This casting
 succeeds because the message structs are declared as packed in the message
 header file, e.g
 
-```
+```cpp
 #pragma pack(push, 1)
 
   struct SystemEvent {
@@ -119,7 +121,7 @@ There is a drawback to this approach. Namely, #pragma push is not supported by a
 
 There is another issue about portability I need to discuss.  That's the byte swapping function
 
-```
+```cpp
 network_to_host(msg);
 ```
 
@@ -127,10 +129,9 @@ The message are in Big Endian format (network) and my system (host) is Little En
 
 The final step in the parse function   
 
-```
+```cpp
 handler(msg);
 ```
 
 
-This is a generic method meant to redirect the messages to some destination.  In this example it's print function.  It could in principle redirect to some other location such as a data base or a
-in memory data structure representing a Limit Order Book.
+This is a generic method meant to redirect the messages to some destination.  In this example it's print function.  It could in principle redirect to some other location such as a data base or an in-memory data structure representing a Limit Order Book.
