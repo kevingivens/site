@@ -80,8 +80,7 @@ default:
 }
 ```
 
-the `parseAs` function converts the raw bytes into message structs.  It does so using
-the following three lines in it's function body.
+the `parseAs` function converts the raw bytes into message structs.  It does so using the following three lines in it's function body.
 
 ```
 MsgType msg{*reinterpret_cast<const MsgType*>(buf)};
@@ -114,6 +113,24 @@ header file, e.g
 #pragma pack(pop)
 ```
 
-This means that the data members are aligned to match the bytes
+This means that the data members are aligned to match the message bytes.  For more on alignment and packing, see this stackoverflow thread. (https://stackoverflow.com/questions/3318410/pragma-pack-effect)
 
-(https://stackoverflow.com/questions/3318410/pragma-pack-effect)
+There is a drawback to this approach. Namely, #pragma push is not supported by all C++ compilers and therefor limits the portability of the code.  It's a fare point, but for the purpose of this exercise I choose to use #pragma push because it simplifies the casting from bytes to structs.  
+
+There is another issue about portability I need to discuss.  That's the byte swapping function
+
+```
+network_to_host(msg);
+```
+
+The message are in Big Endian format (network) and my system (host) is Little Endian (x86).  The `network_to_host` functions simply reverse the byte order.  There are OS specific utilities for doing this (e.g. in Linux), but that would again limit code portability (a common problem in C++!)
+
+The final step in the parse function   
+
+```
+handler(msg);
+```
+
+
+This is a generic method meant to redirect the messages to some destination.  In this example it's print function.  It could in principle redirect to some other location such as a data base or a
+in memory data structure representing a Limit Order Book.
