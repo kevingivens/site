@@ -115,9 +115,9 @@ header file, e.g
 #pragma pack(pop)
 ```
 
-This means that the data members are aligned to match the message bytes.  For more on alignment and packing, see this stackoverflow thread. (https://stackoverflow.com/questions/3318410/pragma-pack-effect)
+This means that the data members are aligned to match the message bytes, i.e. there is no byte padding between data members.  For more on alignment and packing, see this stackoverflow thread. (https://stackoverflow.com/questions/3318410/pragma-pack-effect)
 
-There is a drawback to this approach. Namely, #pragma push is not supported by all C++ compilers and therefor limits the portability of the code.  It's a fare point, but for the purpose of this exercise I choose to use #pragma push because it simplifies the casting from bytes to structs.  
+There is a drawback to this approach. Namely, #pragma push is not supported by all C++ compilers.  This limits the portability of the code.  It's a fare point, but for the purpose of this exercise I choose to use #pragma push because it simplifies the casting from bytes to structs.  Otherwise I would be forced to specify exactly how many bytes to read and in what order for each message type.  
 
 There is another issue about portability I need to discuss.  That's the byte swapping function
 
@@ -125,7 +125,12 @@ There is another issue about portability I need to discuss.  That's the byte swa
 network_to_host(msg);
 ```
 
-The message are in Big Endian format (network) and my system (host) is Little Endian (x86).  The `network_to_host` functions simply reverse the byte order.  There are OS specific utilities for doing this (e.g. in Linux), but that would again limit code portability (a common problem in C++!)
+The incoming messages are in Big Endian (network) format. My system (host) is Little Endian (x86).  The `network_to_host` functions simply reverse the byte order.  There are OS specific utilities for doing this (e.g. in Linux), but that would again limit code portability (a common problem in C++!).
+
+For simplicity, I use the explicit byte swapping routines from the swap.hpp file such as
+
+```
+```
 
 The final step in the parse function   
 
@@ -135,3 +140,22 @@ handler(msg);
 
 
 This is a generic method meant to redirect the messages to some destination.  In this example it's print function.  It could in principle redirect to some other location such as a data base or an in-memory data structure representing a Limit Order Book.
+
+
+With the struct-casting, byte-swapping and printing functions in place, the parser is functional.  The next step is to
+write out the hierarchy of message types from the ITCH specification and make sure there are functions in place for each type.  
+
+Being naturally lazy, I found this task tedious and error prone.  Instead, I copied the spec into a yaml file and wrote a python
+program that parsers the yaml file and builds the structs, byte-swapping functions and printers in C++.  This approach has the nice
+advantage that when the ITCH stand changes, the C++ parser can easly be built again from the specification file.
+
+An example entry from the yaml ITCH specification file looks like the following
+
+```
+```
+The python program consists of a series of yaml parsers, each one generating a different C++ output file.
+
+For instnance.
+
+
+As always, you can find code for this blog on my github page.  See you next time.
