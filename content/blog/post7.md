@@ -19,7 +19,7 @@ function in the compiled language use wish to export to users.  These wrapper fu
 the input and output of data to the compiled functions, such that the user of the wrapper function can
 safely ignore the details of the compiled language.  A schematic of this is given below[^1]
 
-![png]({attach}post7_files/image_wrapper.jpg)
+![png]({attach}post7_files/image_wrapper.jpg)  
 
 [^1]: Credit: David Beazley Swig Master [Class](http://www.dabeaz.com/SwigMaster/SWIGMaster.pdf).
 
@@ -143,7 +143,7 @@ The reason for the the underscore is that definition files with the same name as
 
 This leads to the situation where there are three files for every one hpp file. This isn't ideal, but at least it's consistent and avoids having to rename C++ objects.
 
-# Python Data Structure
+# Python Data Structures
 
 One of the main reasons to prefer Cython over other binding tools is its flexibility.
 PyQL takes advantage of this flexibility to make Quantlib more compatible with standard
