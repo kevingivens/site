@@ -101,7 +101,9 @@ HIDE_SIDEBAR = False
 #RELATIVE_URLS = True
 
 # Pygments Style http://blog.yjl.im/2015/08/pygments-styles-gallery.html
-PYGMENTS_STYLE = 'paraiso-dark'
+PYGMENTS_STYLE = 'default'
+# PYGMENTS_STYLE = 'autumn'
+# PYGMENTS_STYLE = 'paraiso-dark'
 #'tango'
 #'colorful'
 #'friendly'
