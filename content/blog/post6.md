@@ -145,7 +145,7 @@ This is a generic method meant to redirect the messages to some destination.  In
 With the struct-casting, byte-swapping and printing functions in place, the parser is functional.  The next step is to
 write out the hierarchy of message types from the ITCH specification and make sure there are functions in place for each type.  
 
-Being naturally lazy, I found this task tedious and error prone.  Instead, I copied the spec into a yaml file and wrote a python
+Personally, I found this task tedious and error prone.  Instead, I copied the spec into a yaml file and wrote a python
 program that parsers the yaml file and builds the structs, byte-swapping functions and printers in C++.  This approach has the nice
 advantage that when the ITCH stand changes, the C++ parser can easly be built again from the specification file.
 
@@ -155,7 +155,7 @@ An example entry from the yaml ITCH specification file looks like the following
 ```
 The python program consists of a series of yaml parsers, each one generating a different C++ output file.
 
-For instnance.
+For instance.
 
 
 As always, you can find code for this blog on my github page.  See you next time.
