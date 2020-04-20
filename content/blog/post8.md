@@ -1,6 +1,6 @@
 Title: Automating the Binding Process in Cython
-Date: 2020-04-13 12:20
-Category: Python, Cython
+Date: 2020-04-20 19:10
+Category: Cython
 Tags: Python, Cython, Binding
 
 Summary: We discuss an approach towards automating the writing of Cython bindings
@@ -12,12 +12,12 @@ tremendous amount of control over both code performance and semantics in a langu
 that is a superset of Python. It's no surprise much of the Scientific Python
 ecosystem uses Cython to wrap C and C++ libraries.
 
-However, in this post, I want to discuss one of common pain point of Cython as
+However, in this post, I want to discuss one of the common pain points of Cython as
 well an approach I'm currently working on to alleviate some of this pain.
 The pain point I'm focusing on is the shear amount of code one needs to write in
 Cython. Consider the following dummy C++ class
 
-```s
+```cpp
 // foo.hpp
 
 class Foo {
@@ -61,18 +61,18 @@ cdef class Foo:
 
 So you can see that 3 lines from a C++ file becomes ~12 lines of Cython.  This
 isn't a major problem for small C or C++ libraries, but for large libraries with
-1000's of interface files, writing Cython bindings for the entire library becomes  
+1000's of interface files, writing Cython bindings for the entire library becomes 
 a colossal task.
 
 A second problem can arise when a C or C++ library is under heavy active development.
 Public interfaces may change significantly from one release to the next rendering your
-your hard-fought Cython bindings obsolete.  Like Sisyphus, you're plagued with the
+hard-fought Cython bindings obsolete.  Like Sisyphus, you're plagued with the
 eternal task of keeping your bindings up to date with the latest release.
 
 One natural approach to resolving this dilemma to write a computer program
 that automatically generates these bindings for you, "on the fly", every time there is a
 new release of the underlying C or C++ library.  It's this approach I want to
-discuss in this post.
+discuss in here.
 
 The essence of the idea is familiar for anyone who has studied compilers. If you
 want to transform data (in this case, code) from one language (C/C+) to another (Cython)
@@ -83,10 +83,11 @@ order to give this approach a try is a C/C++ parser.  Know any good ones?
 
 Just kidding, sort of.  Until recently, the only C/C++ parser in the open source
 world was buried inside GCC along with linkers, Fortran parsers, and various other
-goodies. Thankfully, that situation has improved with LLVM project.  Clang is
+goodies. Thankfully, this situation has improved with the LLVM project.  Clang is
 production quality C family compiler whose parser is accessible in python through
-the [libClang](https://clang.llvm.org/) bindings.  The story for C code, is even better.  There is an
-open source C parser in pure python called [pycparser](https://github.com/eliben/pycparser).
+the [libClang](https://clang.llvm.org/doxygen/group__CINDEX.html) bindings. The 
+story for C code, is even better.  There is an open source C parser written in pure 
+python called [pycparser](https://github.com/eliben/pycparser).
 
 We can actually take this parsing approach one step further.  We can use the
 C/C++ parsers to translate source code into C-level declarations in pxd files
@@ -103,9 +104,9 @@ Pycparser is a C parser written in pure python. We can use it to parse C header
 files and generate corresponding pxd files.  For the purpose of this post, we'll
 use an example C file from the [c-algorithms library](https://github.com/fragglet/c-algorithms)
 In particular, we'll focus on its implementation of a [trie](https://en.wikipedia.org/wiki/Trie)
-data structure (trie.h), schematically given below
+data structure (trie.h), annotated in the snippet below:
 
-```c
+```cpp
 // trie.h
 
 typedef struct _Trie Trie;
@@ -121,7 +122,7 @@ int trie_insert(Trie *trie, char *key, TrieValue value);
 ```
 
 The idea is to use pycparser to translate this to the equivalent cython declarations
-in a pxd.  The generated pxd file would look like this
+in a pxd file.  The generated pxd file would look like this:
 
 ```cython
 # trie.pxd
@@ -145,11 +146,43 @@ So the translation consists of the following:
 - placing all statements inside a `cdef extern` block
 - `typedef` goes to `ctypedef`
 - trailing `;` is removed from each statement
-- `typedef struct` gets a  to `pass` (skipped implementation)
+- `typedef struct` goes to `pass` (skipped implementation)
 - `trie_new(void)` has `void` removed
+
 
 ## AST
 
-These translation steps happen by walking a intermediate data representation known
-as an abstract syntax tree (AST).  Each node in the tree is "visited" by a
-corresponding visit function.  The AST for this example looks like the following
+These translation are implemented by walking a intermediate data representation known as an abstract syntax tree (AST).  Each node in the tree is "visited" by a 
+corresponding visit function.  The AST for this example looks like the following:
+
+![png]({attach}post8_files/ast.jpeg)
+
+In order the walk the AST, I wrote a Cython generator class.  This is slight modification of 
+the C generator that comes with the pycparser release.  Take a look at my [github](https://github.com/kevingivens/Blog)
+for more details. The ideas is to provide a `visit_foo` method for each node type that 
+generates the correct Cython implemenation code. Some highlights from the generator are given below
+
+```python
+def visit_Typedef(self, n):
+    s = 'c' # prepend 'typedef' with 'c'
+    if n.storage: s += ' '.join(n.storage) + ' '
+    # handle typedef struct definition
+	if type(n.type) == c_ast.TypeDecl and type(n.type.type) == c_ast.Struct:
+        s += self._handle_typedef_struct(n.type)
+    else:
+        s += self._generate_type(n.type)
+    return s
+
+def visit_ParamList(self, n):
+    ''' return '' if 'void' is only argument
+	'''
+    param_list = ', '.join(self.visit(param) for param in n.params)
+    if param_list == 'void':
+        return ''
+	else:
+	    return param_list
+
+```
+
+In my next post, I will discuss how to use the Cython parser itself to parse pxd files and generate pyx files.
+
