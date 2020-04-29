@@ -61,7 +61,7 @@ cdef class Foo:
 
 So you can see that 3 lines from a C++ file becomes ~12 lines of Cython.  This
 isn't a major problem for small C or C++ libraries, but for large libraries with
-1000's of interface files, writing Cython bindings for the entire library becomes 
+1000's of interface files, writing Cython bindings for the entire library becomes
 a colossal task.
 
 A second problem can arise when a C or C++ library is under heavy active development.
@@ -85,8 +85,8 @@ Just kidding, sort of.  Until recently, the only C/C++ parser in the open source
 world was buried inside GCC along with linkers, Fortran parsers, and various other
 goodies. Thankfully, this situation has improved with the LLVM project.  Clang is
 production quality C family compiler whose parser is accessible in python through
-the [libClang](https://clang.llvm.org/doxygen/group__CINDEX.html) bindings. The 
-story for C code, is even better.  There is an open source C parser written in pure 
+the [libClang](https://clang.llvm.org/doxygen/group__CINDEX.html) bindings. The
+story for C code, is even better.  There is an open source C parser written in pure
 python called [pycparser](https://github.com/eliben/pycparser).
 
 We can actually take this parsing approach one step further.  We can use the
@@ -152,14 +152,15 @@ So the translation consists of the following:
 
 ## AST
 
-These translation are implemented by walking a intermediate data representation known as an abstract syntax tree (AST).  Each node in the tree is "visited" by a 
+These translation are implemented by walking a intermediate data representation
+known as an abstract syntax tree (AST).  Each node in the tree is "visited" by a
 corresponding visit function.  The AST for this example looks like the following:
 
 ![png]({attach}post8_files/ast.jpeg)
 
-In order the walk the AST, I wrote a Cython generator class.  This is slight modification of 
+In order to walk the AST, I wrote a Cython generator class.  This is slight modification of
 the C generator that comes with the pycparser release.  Take a look at my [github](https://github.com/kevingivens/Blog)
-for more details. The ideas is to provide a `visit_foo` method for each node type that 
+for more details. The idea is to provide a `visit_foo` method for each node type that
 generates the correct Cython implemenation code. Some highlights from the generator are given below
 
 ```python
@@ -185,4 +186,3 @@ def visit_ParamList(self, n):
 ```
 
 In my next post, I will discuss how to use the Cython parser itself to parse pxd files and generate pyx files.
-
